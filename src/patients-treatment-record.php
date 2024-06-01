@@ -1,62 +1,69 @@
 <?php
-require_once ('src/includes/session-nurse.php');
-require_once ('src/includes/connect.php');
+require_once('src/includes/session-nurse.php');
+require_once('src/includes/connect.php');
 
+$symptoms = isset($_GET['symptoms']) ? htmlspecialchars($_GET['symptoms']) : '';
+$diagnosis = isset($_GET['diagnosis']) ? htmlspecialchars($_GET['diagnosis']) : '';
+$treatments = isset($_GET['treatments']) ? htmlspecialchars($_GET['treatments']) : '';
+
+// Set aiToolUsed to true only if symptoms, diagnosis, and treatments are not empty
+$aiToolUsed = !empty($symptoms) && !empty($diagnosis) && !empty($treatments);
+
+// Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Check if patient_id is set in the POST data
+    // Validate if patient_id is set
     if (isset($_POST['patient_id'])) {
         $patient_id = mysqli_real_escape_string($conn, $_POST['patient_id']);
 
-        // Query to check if the patient exists
+        // Check if the patient exists
         $check_patient_query = "SELECT * FROM patient WHERE patient_id = '$patient_id'";
         $result = mysqli_query($conn, $check_patient_query);
 
-        // If no rows are returned, patient does not exist
         if (mysqli_num_rows($result) == 0) {
             echo "Error: Patient does not exist!";
-            echo "Patient ID: " . $patient_id;
             exit();
         }
+
+        // Retrieve and sanitize form data
+        $full_name = mysqli_real_escape_string($conn, $_POST['full_name']);
+        $sex = mysqli_real_escape_string($conn, $_POST['sex']);
+        $age = mysqli_real_escape_string($conn, $_POST['age']);
+        $course = mysqli_real_escape_string($conn, $_POST['course']);
+        $section = mysqli_real_escape_string($conn, $_POST['section']);
+        $symptoms = mysqli_real_escape_string($conn, $_POST['symptoms']);
+        $diagnosis = mysqli_real_escape_string($conn, $_POST['diagnosis']);
+        $treatments = mysqli_real_escape_string($conn, $_POST['treatments']);
+
+        // Insert data into the database
+        $sql = "INSERT INTO treatment_record (patient_id, full_name, sex, age, course, section, symptoms, diagnosis, treatments) 
+                VALUES ('$patient_id', '$full_name', '$sex', '$age', '$course', '$section', '$symptoms', '$diagnosis', '$treatments')";
+
+        if (mysqli_query($conn, $sql)) {
+            $url = "treatment-record-confirmation.php?";
+            $url .= "patient_id=" . urlencode($patient_id) . "&";
+            $url .= "full_name=" . urlencode($full_name) . "&";
+            $url .= "sex=" . urlencode($sex) . "&";
+            $url .= "age=" . urlencode($age) . "&";
+            $url .= "course=" . urlencode($course) . "&";
+            $url .= "section=" . urlencode($section) . "&";
+            $url .= "symptoms=" . urlencode($symptoms) . "&";
+            $url .= "diagnosis=" . urlencode($diagnosis) . "&";
+            $url .= "treatments=" . urlencode($treatments);
+            header("Location: $url");
+            exit();
+        } else {
+            echo "Error: " . mysqli_error($conn);
+        }
     } else {
-        // If patient_id is not set in the POST data, exit with an error
         echo "Error: Patient ID is missing!";
         exit();
     }
-
-    $full_name = isset($_POST['full_name']) ? $_POST['full_name'] : '';
-    $sex = isset($_POST['sex']) ? $_POST['sex'] : '';
-    $age = mysqli_real_escape_string($conn, $_POST['age']);
-    $course = mysqli_real_escape_string($conn, $_POST['course']);
-    $section = mysqli_real_escape_string($conn, $_POST['section']);
-    $symptoms = mysqli_real_escape_string($conn, $_POST['symptoms']);
-    $diagnosis = mysqli_real_escape_string($conn, $_POST['diagnosis']);
-    $treatments = mysqli_real_escape_string($conn, $_POST['treatments']);
-
-    $sql = "INSERT INTO treatment_record (patient_id, full_name, sex, age, course, section, symptoms, diagnosis, treatments) 
-            VALUES ('$patient_id', '$full_name', '$sex', '$age', '$course', '$section', '$symptoms', '$diagnosis', '$treatments')";
-
-    if (mysqli_query($conn, $sql)) {
-        // Redirect to confirmation page with form data
-        $url = "treatment-record-confirmation.php?";
-        $url .= "patient_id=" . urlencode($patient_id) . "&";
-        $url .= "full_name=" . urlencode($full_name) . "&";
-        $url .= "sex=" . urlencode($sex) . "&";
-        $url .= "age=" . urlencode($age) . "&";
-        $url .= "course=" . urlencode($course) . "&";
-        $url .= "section=" . urlencode($section) . "&";
-        $url .= "symptoms=" . urlencode($symptoms) . "&";
-        $url .= "diagnosis=" . urlencode($diagnosis) . "&";
-        $url .= "treatments=" . urlencode($treatments);
-        header("Location: $url");
-        exit();
-    } else {
-        echo "Error: " . mysqli_error($conn);
-    }
-
 }
 
+// Close the database connection
 mysqli_close($conn);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -125,6 +132,12 @@ mysqli_close($conn);
         color: #fff !important;
         cursor: default !important;
         border: none !important;
+    }
+
+    .grayed-out {
+        background-color: #f2f2f2; /* Gray background */
+        color: #999; /* Light gray text color */
+        pointer-events: none; /* Disable interaction */
     }
 </style>
 
@@ -250,6 +263,19 @@ mysqli_close($conn);
     ?>
     <script src="vendors/bootstrap-5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="src/scripts/script.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const aiToolUsed = <?php echo json_encode($aiToolUsed); ?>;
+            if (aiToolUsed) {
+                // Add the 'grayed-out' class to the input fields when AI tool is used
+                document.getElementById('symptoms').classList.add('grayed-out');
+                document.getElementById('diagnosis').classList.add('grayed-out');
+                document.getElementById('treatments').classList.add('grayed-out');
+            }
+        });
+    </script>
+
     <script>
         $(document).ready(function () {
             // Show Modal when Log Out menu item is clicked
@@ -272,6 +298,54 @@ mysqli_close($conn);
 
     <script>
         $(document).ready(function () {
+            const patientList = $('#patient-list');
+
+            function clearAndEnableFields() {
+                $('#age, #sex, #course, #section').removeClass('grayed-out').removeAttr('readonly').val('');
+            }
+
+            $('#full-name').on('input', function () {
+                clearAndEnableFields();
+                let fullName = $(this).val();
+                if (fullName.length >= 2) {
+                    $.ajax({
+                        url: 'get_patient_info.php',
+                        method: 'GET',
+                        data: { full_name: fullName },
+                        success: function (data) {
+                            patientList.empty();
+                            if (data.length > 0) {
+                                data.forEach(patient => {
+                                    patientList.append(`<li data-id="${patient.patient_id}" data-age="${patient.age}" data-sex="${patient.sex}" data-course="${patient.course}" data-section="${patient.section}">${patient.full_name}</li>`);
+                                });
+                                patientList.show();
+                            } else {
+                                patientList.hide();
+                            }
+                        }
+                    });
+                } else {
+                    patientList.hide();
+                }
+            });
+
+            patientList.on('click', 'li', function () {
+                let patientId = $(this).data('id');
+                let age = $(this).data('age');
+                let sex = $(this).data('sex');
+                let course = $(this).data('course');
+                let section = $(this).data('section');
+
+                $('#patient-id').val(patientId);
+                $('#age').val(age);
+                $('#sex').val(sex);
+                $('#course').val(course);
+                $('#section').val(section);
+
+                patientList.hide();
+                $('#patient-info-confirm-button').removeAttr('disabled');
+            });
+
             // Show Modal when Submit button is clicked
             $("#submit-form-button").click(function (event) {
                 event.preventDefault(); // Prevent default form submission
@@ -291,15 +365,20 @@ mysqli_close($conn);
     </script>
 
     <script>
+    function selectPatient(patient_id, fullName, gender, age, course, section) {
+        document.getElementById("full-name").value = fullName;
+        document.getElementById("sex").value = gender;
+        document.getElementById("age").value = age;
+        document.getElementById("course").value = course;
+        document.getElementById("section").value = section;
+        document.getElementById("patient_id").value = patient_id;
 
-        function selectPatient(patient_id, fullName, gender, age, course, section) {
-            document.getElementById("full-name").value = fullName;
-            document.getElementById("gender").value = gender;
-            document.getElementById("age").value = age;
-            document.getElementById("course").value = course;
-            document.getElementById("section").value = section;
-            document.getElementById("patient_id").value = patient_id;
-        }
+        // Add 'grayed-out' class to the fields
+        document.getElementById("sex").classList.add('grayed-out');
+        document.getElementById("age").classList.add('grayed-out');
+        document.getElementById("course").classList.add('grayed-out');
+        document.getElementById("section").classList.add('grayed-out');
+    }
     </script>
 
     <script>
@@ -330,70 +409,117 @@ mysqli_close($conn);
 
         // JavaScript
         function searchPatients(input) {
-            if (input.length == 0) {
-                document.getElementById("search-results").innerHTML = "";
-                document.getElementById("search-results").style.display = "none";
-                return;
-            } else {
-                $.ajax({
-                    type: 'POST',
-                    url: 'autocomplete.php',
-                    data: { input: input },
-                    success: function (data) {
-                        console.log(data);
-                        try {
-                            var suggestions = JSON.parse(data);
-                            if (Array.isArray(suggestions) && suggestions.length > 0) {
-                                var listHtml = '';
-                                suggestions.forEach(function (person) {
-                                    var fullName = person.first_name + ' ' + person.last_name;
-                                    listHtml += '<li onclick="selectFullName(\'' + fullName + '\', \'' + person.patient_id + '\')">' + fullName + '</li>';
-                                });
-                                $('#search-results').html(listHtml);
-                                document.getElementById("search-results").style.display = "block";
-                            } else {
-                                document.getElementById("search-results").innerHTML = "";
-                                document.getElementById("search-results").style.display = "none"; // Hide the list box if there are no suggestions
-                            }
-                        } catch (error) {
-                            console.error('Error parsing JSON:', error);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            }
-        }
-
-        function selectFullName(fullName, patientId) {
-            document.getElementById("full-name").value = fullName;
-            document.getElementById("patient_id").value = patientId; // Set the patient_id
-            document.getElementById("search-results").innerHTML = ""; // Clear suggestions
-            document.getElementById("search-results").style.display = "none"; // Hide the search results
-            // Now, fetch additional patient data from the server using patientId
+        if (input.length == 0) {
+            document.getElementById("search-results").innerHTML = "";
+            document.getElementById("search-results").style.display = "none";
+            return;
+        } else {
             $.ajax({
                 type: 'POST',
                 url: 'autocomplete.php',
-                data: { patient_id: patientId },
+                data: { input: input },
                 success: function (data) {
-                    // Assuming 'data' contains JSON with patient details
+                    console.log(data);
                     try {
-                        var patientData = JSON.parse(data);
-                        document.getElementById("sex").value = patientData.sex;
-                        document.getElementById("age").value = patientData.age;
-                        document.getElementById("course").value = patientData.course;
-                        document.getElementById("section").value = patientData.section;
-                        document.getElementById("symptoms").focus(); // Move focus to the next input field
+                        var suggestions = JSON.parse(data);
+                        if (Array.isArray(suggestions) && suggestions.length > 0) {
+                            var listHtml = '';
+                            suggestions.forEach(function (person) {
+                                var fullName = person.first_name + ' ' + person.last_name;
+                                listHtml += '<li onclick="selectFullName(\'' + fullName + '\', \'' + person.patient_id + '\')">' + fullName + '</li>';
+                            });
+                            $('#search-results').html(listHtml);
+                            document.getElementById("search-results").style.display = "block";
+                        } else {
+                            document.getElementById("search-results").innerHTML = "";
+                            document.getElementById("search-results").style.display = "none"; // Hide the list box if there are no suggestions
+                        }
                     } catch (error) {
                         console.error('Error parsing JSON:', error);
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.error(xhr.responseText); // Log any errors to the console
+                    console.error(xhr.responseText);
                 }
             });
         }
+    }
+
+    function searchPatients(input) {
+        if (input.length == 0) {
+            document.getElementById("search-results").innerHTML = "";
+            document.getElementById("search-results").style.display = "none";
+            return;
+        } else {
+            $.ajax({
+                type: 'POST',
+                url: 'autocomplete.php',
+                data: { input: input },
+                success: function (data) {
+                    console.log(data);
+                    try {
+                        var suggestions = JSON.parse(data);
+                        if (Array.isArray(suggestions) && suggestions.length > 0) {
+                            var listHtml = '';
+                            suggestions.forEach(function (person) {
+                                var fullName = person.first_name + ' ' + person.last_name;
+                                listHtml += '<li onclick="selectFullName(\'' + fullName + '\', \'' + person.patient_id + '\')">' + fullName + '</li>';
+                            });
+                            $('#search-results').html(listHtml);
+                            document.getElementById("search-results").style.display = "block";
+                        } else {
+                            document.getElementById("search-results").innerHTML = "";
+                            document.getElementById("search-results").style.display = "none"; // Hide the list box if there are no suggestions
+                        }
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    }
+
+    function selectFullName(fullName, patientId) {
+        document.getElementById("full-name").value = fullName;
+        document.getElementById("patient_id").value = patientId; // Set the patient_id
+        document.getElementById("search-results").innerHTML = ""; // Clear suggestions
+        document.getElementById("search-results").style.display = "none"; // Hide the search results
+        
+        // Now, fetch additional patient data from the server using patientId
+        $.ajax({
+            type: 'POST',
+            url: 'autocomplete.php',
+            data: { patient_id: patientId },
+            success: function (data) {
+                // Assuming 'data' contains JSON with patient details
+                try {
+                    var patientData = JSON.parse(data);
+                    document.getElementById("sex").value = patientData.sex;
+                    document.getElementById("age").value = patientData.age;
+                    document.getElementById("course").value = patientData.course;
+                    document.getElementById("section").value = patientData.section;
+                    document.getElementById("symptoms").focus(); // Move focus to the next input field
+                    
+                    // Add 'grayed-out' class to the fields
+                    document.getElementById("sex").classList.add('grayed-out');
+                    document.getElementById("age").classList.add('grayed-out');
+                    document.getElementById("course").classList.add('grayed-out');
+                    document.getElementById("section").classList.add('grayed-out');
+
+                    // Trigger the checkFormCompletion function after auto-completing patient credentials
+                    checkFormCompletion();
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText); // Log any errors to the console
+            }
+        });
+    }
 
         // Trigger autocomplete only when input length > 0
         $(document).ready(function () {
@@ -417,24 +543,49 @@ mysqli_close($conn);
             var treatments = document.getElementById("treatments").value.trim();
 
             // Check if all required fields are completed
-            var allFieldsCompleted = fullName !== '' && sex !== '' && age !== '' && course !== '' && section !== '' && symptoms !== '' && diagnosis !== '' && treatments !== '';
+            var allFieldsCompleted = fullName !== '' && sex !== '' && age !== '' && course !== '' && section !== '' &&
+                symptoms !== '' && diagnosis !== '' && treatments !== '';
 
             // Enable or disable the submit button based on completion status
-            document.getElementById("submit-form-button").disabled = !allFieldsCompleted;
+            var submitButton = document.getElementById("submit-form-button");
+            submitButton.disabled = !allFieldsCompleted;
         }
 
-        // Add event listeners to input fields to trigger the checkFormCompletion function
-        document.getElementById("full-name").addEventListener("input", checkFormCompletion);
-        document.getElementById("sex").addEventListener("input", checkFormCompletion);
-        document.getElementById("age").addEventListener("input", checkFormCompletion);
-        document.getElementById("course").addEventListener("input", checkFormCompletion);
-        document.getElementById("section").addEventListener("input", checkFormCompletion);
-        document.getElementById("symptoms").addEventListener("input", checkFormCompletion);
-        document.getElementById("diagnosis").addEventListener("input", checkFormCompletion);
-        document.getElementById("treatments").addEventListener("input", checkFormCompletion);
+         // Add event listeners to input fields to trigger the checkFormCompletion function
+    document.getElementById("full-name").addEventListener("input", function() {
+        clearAndEnableFields(); // Clear and enable fields when full_name input changes
+        checkFormCompletion(); // Check form completion status after full_name input changes
+    });
+    document.getElementById("sex").addEventListener("input", checkFormCompletion);
+    document.getElementById("age").addEventListener("input", checkFormCompletion);
+    document.getElementById("course").addEventListener("input", checkFormCompletion);
+    document.getElementById("section").addEventListener("input", checkFormCompletion);
+    document.getElementById("symptoms").addEventListener("input", checkFormCompletion);
+    document.getElementById("diagnosis").addEventListener("input", checkFormCompletion);
+    document.getElementById("treatments").addEventListener("input", checkFormCompletion);
 
-        // Call the checkFormCompletion function initially to set the initial state of the submit button
-        checkFormCompletion();
+    // Call the checkFormCompletion function initially to set the initial state of the submit button
+    checkFormCompletion();
+    </script>
+
+<script>
+        // JavaScript function to clear and enable fields when full_name input changes
+        function clearAndEnableFields() {
+            // Clear the values of the fields
+            document.getElementById("sex").value = "";
+            document.getElementById("age").value = "";
+            document.getElementById("course").value = "";
+            document.getElementById("section").value = "";
+
+            // Enable the fields
+            document.getElementById("sex").classList.add('grayed-out') = false;
+            document.getElementById("age").classList.add('grayed-out') = false;
+            document.getElementById("course").classList.add('grayed-out') = false;
+            document.getElementById("section").classList.add('grayed-out') = false;
+        }
+
+        // Add event listener to the full_name input field to trigger the clearAndEnableFields function
+        document.getElementById("full-name").addEventListener("input", clearAndEnableFields);
     </script>
 
 </body>

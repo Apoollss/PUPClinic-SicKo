@@ -1,6 +1,6 @@
 <?php
-require_once ('src/includes/session-nurse.php');
-require_once ('src/includes/connect.php');
+require_once ('includes/session-nurse.php');
+require_once ('includes/connect.php');
 
 // Number of records to display per page
 $recordsPerPage = 5;
@@ -47,24 +47,24 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medical Reports</title>
-    <link rel="icon" type="image/png" href="src/images/heart-logo.png">
-    <link rel="stylesheet" href="src/styles/dboardStyle.css">
-    <link rel="stylesheet" href="src/styles/modals.css">
-    <link rel="stylesheet" href="vendors/bootstrap-5.0.2/dist/css/bootstrap.min.css">
+    <link rel="icon" type="image/png" href="images/heart-logo.png">
+    <link rel="stylesheet" href="styles/dboardStyle.css">
+    <link rel="stylesheet" href="styles/modals.css">
+    <link rel="stylesheet" href="../vendors/bootstrap-5.0.2/dist/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 </head>
 <div>
 
     <div class="loader">
-        <img src="src/images/loader.gif">
+        <img src="images/loader.gif">
     </div>
 
     <div class="overlay" id="overlay"></div>
 
     <div class="main-content">
         <?php
-        include ('src/includes/sidebar/reports.php');
+        include ('includes/sidebar/reports.php');
         ?>
 
 
@@ -118,7 +118,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                         ?>
                         <div class="row-first-content">
                             <div class="extend-down-icon" onclick="toggleQuarter('firstQuarter')">
-                                <img src="src/images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
+                                <img src="images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
                             </div>
                             <div class="quarterly-report-title">
                                 <div class="quarter-number" id="">First Quarter</div>
@@ -149,7 +149,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                 <div class="alter-report-header">
                                     <div class="alter-header-content">
                                         <div class="extended-down-icon" onclick="toggleQuarter('firstQuarter')">
-                                            <img src="src/images/extended-down.svg" alt="Extended Down Icon"
+                                            <img src="images/extended-down.svg" alt="Extended Down Icon"
                                                 class="extended-down-icon">
                                         </div>
                                         <div class="alter-header-title">
@@ -193,7 +193,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 1";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 1";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -208,7 +208,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 2";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 2";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -223,7 +223,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 3";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 3";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -270,7 +270,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                         ?>
                         <div class="row-first-content">
                             <div class="extend-down-icon" onclick="toggleQuarter('secondQuarter')">
-                                <img src="src/images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
+                                <img src="images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
                             </div>
                             <div class="quarterly-report-title">
                                 <div class="quarter-number" id="">Second Quarter</div>
@@ -301,7 +301,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                 <div class="alter-report-header">
                                     <div class="alter-header-content">
                                         <div class="extended-down-icon" onclick="toggleQuarter('secondQuarter')">
-                                            <img src="src/images/extended-down.svg" alt="Extended Down Icon"
+                                            <img src="images/extended-down.svg" alt="Extended Down Icon"
                                                 class="extended-down-icon">
                                         </div>
                                         <div class="alter-header-title">
@@ -345,7 +345,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 4";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 4";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -360,7 +360,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 5";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 5";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -375,7 +375,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 6";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 6";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -423,7 +423,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                         ?>
                         <div class="row-first-content">
                             <div class="extend-down-icon" onclick="toggleQuarter('thirdQuarter')">
-                                <img src="src/images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
+                                <img src="images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
                             </div>
                             <div class="quarterly-report-title">
                                 <div class="quarter-number" id="">Third Quarter</div>
@@ -454,7 +454,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                 <div class="alter-report-header">
                                     <div class="alter-header-content">
                                         <div class="extended-down-icon" onclick="toggleQuarter('thirdQuarter')">
-                                            <img src="src/images/extended-down.svg" alt="Extended Down Icon"
+                                            <img src="images/extended-down.svg" alt="Extended Down Icon"
                                                 class="extended-down-icon">
                                         </div>
                                         <div class="alter-header-title">
@@ -498,7 +498,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 7";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 7";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -513,7 +513,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 8";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 8";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -528,7 +528,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 9";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 9";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -576,7 +576,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                         ?>
                         <div class="row-first-content">
                             <div class="extend-down-icon" onclick="toggleQuarter('fourthQuarter')">
-                                <img src="src/images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
+                                <img src="images/extend-down.svg" alt="Extend Down Icon" class="extend-down-icon">
                             </div>
                             <div class="quarterly-report-title">
                                 <div class="quarter-number" id="">Fourth Quarter</div>
@@ -607,7 +607,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                 <div class="alter-report-header">
                                     <div class="alter-header-content">
                                         <div class="extended-down-icon" onclick="toggleQuarter('fourthQuarter')">
-                                            <img src="src/images/extended-down.svg" alt="Extended Down Icon"
+                                            <img src="images/extended-down.svg" alt="Extended Down Icon"
                                                 class="extended-down-icon">
                                         </div>
                                         <div class="alter-header-title">
@@ -651,7 +651,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 10";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 10";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -666,7 +666,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 11";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 11";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -681,7 +681,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
                                     <div class="alter-count" style="font-size: 15px; font-weight: 500;">
                                         <?php
                                         // Fetch and display the count of unique patient IDs for April
-                                        $query = "SELECT COUNT(DISTINCT patient_id) AS count FROM treatment_record WHERE MONTH(date) = 12";
+                                        $query = "SELECT diagnosis, COUNT(*) AS count FROM treatment_record WHERE MONTH(date) = 12";
                                         $result = mysqli_query($conn, $query);
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['count'];
@@ -701,13 +701,13 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
         </div>
 
         <?php
-        include ('src/includes/footer.php');
+        include ('includes/footer.php');
         ?>
     </div>
 </div>
-<script src="vendors/bootstrap-5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="src/scripts/script.js"></script>
-<script src="src/scripts/loader.js"></script>
+<script src="../vendors/bootstrap-5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="scripts/script.js"></script>
+<script src="scripts/loader.js"></script>
 </body>
 
 </html>
